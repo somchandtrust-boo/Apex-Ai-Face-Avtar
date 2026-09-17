@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no">
+
+<title>APEX — AI Face</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="apex-app">
+
+    <!-- =========================
+         TOP HEADER
+    ========================== -->
+
+    <header class="top-bar">
+
+        <div class="brand">
+            <div class="brand-dot"></div>
+
+            <div>
+                <div class="brand-name">APEX</div>
+                <div class="brand-status">
+                    AI SYSTEM ONLINE
+                </div>
+            </div>
+        </div>
+
+        <div class="system-status">
+            <span class="status-light"></span>
+            ONLINE
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         MAIN APEX FACE
+    ========================== -->
+
+    <main class="face-stage">
+
+        <div class="ambient-glow"></div>
+
+        <div class="apex-face">
+
+            <!-- HEAD -->
+            <div class="face-head">
+
+                <!-- LEFT EYE -->
+                <div class="eye eye-left">
+
+                    <div class="eye-glow"></div>
+
+                    <div class="eye-core">
+                        <div class="eye-pupil"></div>
+                    </div>
+
+                </div>
+
+
+                <!-- RIGHT EYE -->
+                <div class="eye eye-right">
+
+                    <div class="eye-glow"></div>
+
+                    <div class="eye-core">
+                        <div class="eye-pupil"></div>
+                    </div>
+
+                </div>
+
+
+                <!-- NOSE / CENTER SENSOR -->
+                <div class="face-sensor">
+                    <span></span>
+                </div>
+
+
+                <!-- MOUTH -->
+                <div class="apex-mouth">
+
+                    <div class="mouth-line"></div>
+
+                    <div class="mouth-bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FACE RINGS -->
+
+            <div class="face-ring ring-1"></div>
+            <div class="face-ring ring-2"></div>
+            <div class="face-ring ring-3"></div>
+
+
+            <!-- SCANNING LINE -->
+
+            <div class="scan-line"></div>
+
+        </div>
+
+
+        <!-- =========================
+             APEX STATE
+        ========================== -->
+
+        <div class="apex-state">
+
+            <div id="stateText">
+                READY
+            </div>
+
+            <div id="stateSubtext">
+                APEX AI SYSTEM
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================
+         CONTROL PANEL
+    ========================== -->
+
+    <section class="control-panel">
+
+        <button
+            class="control-btn"
+            id="listenBtn">
+
+            <span class="btn-icon">🎙</span>
+
+            <span>
+                LISTEN
+            </span>
+
+        </button>
+
+
+        <button
+            class="control-btn primary"
+            id="activateBtn">
+
+            <span class="btn-icon">✦</span>
+
+            <span>
+                ACTIVATE APEX
+            </span>
+
+        </button>
+
+
+        <button
+            class="control-btn"
+            id="thinkBtn">
+
+            <span class="btn-icon">◉</span>
+
+            <span>
+                THINK
+            </span>
+
+        </button>
+
+    </section>
+
+
+    <!-- =========================
+         TEXT INPUT
+    ========================== -->
+
+    <section class="command-panel">
+
+        <input
+            id="commandInput"
+            type="text"
+            placeholder="Talk to Apex..."
+            autocomplete="off">
+
+        <button
+            id="sendBtn">
+
+            SEND
+
+        </button>
+
+    </section>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+        <span>APEX INTELLIGENCE</span>
+
+        <span class="footer-separator">•</span>
+
+        <span>VOICE INTERFACE</span>
+
+        <span class="footer-separator">•</span>
+
+        <span>SYSTEM READY</span>
+
+    </footer>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
