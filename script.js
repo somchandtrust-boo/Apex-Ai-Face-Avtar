@@ -1,7 +1,7 @@
 /* =========================================================
    APEX AI ASSISTANT
-   INTERNAL MAP + SIREN + FLASHLIGHT
-   EXTERNAL TOOLS + MULTILINGUAL VOICE
+   MULTILINGUAL VOICE + TOOL LINK SYSTEM
+   English + Hindi + Gujarati
    ========================================================= */
 
 "use strict";
@@ -25,27 +25,26 @@ const sendBtn = document.getElementById("sendBtn");
 const leftEye = document.querySelector(".eye-left");
 const rightEye = document.querySelector(".eye-right");
 
-const leftPupil =
-    document.querySelector(".eye-left .eye-pupil");
+const leftPupil = document.querySelector(
+    ".eye-left .eye-pupil"
+);
 
-const rightPupil =
-    document.querySelector(".eye-right .eye-pupil");
+const rightPupil = document.querySelector(
+    ".eye-right .eye-pupil"
+);
 
 
 /* =========================================================
-   2. EXTERNAL APEX LINKS
+   2. APEX LINKS
    ========================================================= */
 
 const APEX_LINKS = {
 
-    /* INTERNAL - NO LINK */
+    /* CBRND TOOLS */
 
-    map: null,
-    siren: null,
-    flashlight: null,
+    map: "YOUR_MAP_LINK",
 
-
-    /* EXTERNAL */
+    siren: "YOUR_SIREN_LINK",
 
     qr:
         "https://somchandtrust-boo.github.io/CBRND-QR/",
@@ -65,6 +64,12 @@ const APEX_LINKS = {
     home:
         "YOUR_CBRND_HOME_LINK",
 
+    flashlight:
+        "YOUR_FLASHLIGHT_LINK",
+
+
+    /* SOCIAL */
+
     instagram:
         "https://www.instagram.com/",
 
@@ -74,11 +79,17 @@ const APEX_LINKS = {
     whatsapp:
         "https://web.whatsapp.com/",
 
+
+    /* INTERNET */
+
     google:
         "https://www.google.com/",
 
     youtube:
         "https://www.youtube.com/",
+
+
+    /* PHONE */
 
     call:
         "tel:"
@@ -86,30 +97,7 @@ const APEX_LINKS = {
 
 
 /* =========================================================
-   3. SYSTEM VARIABLES
-   ========================================================= */
-
-let recognition = null;
-let recognitionSupported = false;
-let isListening = false;
-
-let currentLanguage = "en-IN";
-
-let speakingTimer = null;
-let blinkTimer = null;
-
-let sirenAudioContext = null;
-let sirenOscillator = null;
-let sirenGain = null;
-let sirenTimer = null;
-
-let flashlightStream = null;
-let flashlightTrack = null;
-let flashlightOn = false;
-
-
-/* =========================================================
-   4. STATES
+   3. STATES
    ========================================================= */
 
 const STATES = {
@@ -142,47 +130,65 @@ const STATES = {
 
 
 /* =========================================================
-   5. STATE
+   4. VARIABLES
+   ========================================================= */
+
+let recognition = null;
+
+let recognitionSupported = false;
+
+let isListening = false;
+
+let currentLanguage = "en-IN";
+
+let speakingTimer = null;
+
+let blinkTimer = null;
+
+let eyeTimer = null;
+
+
+/* =========================================================
+   5. STATE SYSTEM
    ========================================================= */
 
 function setState(state) {
 
-    if (stateText) {
-        stateText.textContent =
-            STATES[state]?.[0] || "READY";
-    }
-
-    if (stateSubtext) {
-        stateSubtext.textContent =
-            STATES[state]?.[1] || "APEX AI SYSTEM";
-    }
-
-    if (!app) {
+    if (!stateText || !stateSubtext) {
         return;
     }
 
-    app.classList.remove(
-        "listening",
-        "thinking",
-        "speaking"
-    );
+    const data = STATES[state] || STATES.ready;
 
-    if (state === "listening") {
-        app.classList.add("listening");
-    }
+    stateText.textContent = data[0];
 
-    if (state === "thinking") {
-        app.classList.add("thinking");
-    }
+    stateSubtext.textContent = data[1];
 
-    if (state === "speaking") {
-        app.classList.add("speaking");
+    if (app) {
+
+        app.classList.remove(
+            "listening",
+            "thinking",
+            "speaking"
+        );
+
+        if (state === "listening") {
+            app.classList.add("listening");
+        }
+
+        if (state === "thinking") {
+            app.classList.add("thinking");
+        }
+
+        if (state === "speaking") {
+            app.classList.add("speaking");
+        }
     }
 }
 
 
 /* =========================================================
-   6. LANGUAGE
+   6. LANGUAGE DETECTION
    ========================================================= */
 
 function detectLanguage(text) {
@@ -191,20 +197,26 @@ function detectLanguage(text) {
         return "en-IN";
     }
 
+    /* Gujarati */
+
     if (/[\u0A80-\u0AFF]/.test(text)) {
         return "gu-IN";
     }
 
+    /* Hindi */
+
     if (/[\u0900-\u097F]/.test(text)) {
         return "hi-IN";
     }
+
+    /* English */
 
     return "en-IN";
 }
 
 
 /* =========================================================
-   7. SPEAK
+   7. TEXT TO SPEECH
    ========================================================= */
 
 function speak(text, language = currentLanguage) {
@@ -215,12 +227,17 @@ function speak(text, language = currentLanguage) {
 
     window.speechSynthesis.cancel();
 
+    stopSpeakingAnimation();
+
     const utterance =
         new SpeechSynthesisUtterance(text);
 
     utterance.lang = language;
+
     utterance.rate = 0.92;
+
     utterance.pitch = 1;
+
     utterance.volume = 1;
 
     utterance.onstart = function () {
@@ -254,26 +271,34 @@ function speak(text, language = currentLanguage) {
 
 function stopApex() {
 
+    /* Stop speech */
+
     if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
     }
+
+    /* Stop recognition */
 
     if (recognition && isListening) {
 
         try {
             recognition.stop();
         } catch (error) {
-            console.log(error);
+            console.log("Recognition stop:", error);
         }
     }
 
-    stopSpeakingAnimation();
-
-    stopSiren();
-
     isListening = false;
 
+    stopSpeakingAnimation();
+
+    stopThinkingAnimation();
+
     setState("ready");
+
+    if (commandInput) {
+        commandInput.value = "";
+    }
 }
 
 
@@ -285,10 +310,11 @@ function startSpeakingAnimation() {
 
     stopSpeakingAnimation();
 
-    speakingTimer = setInterval(
-        moveEyesRandomly,
-        650
-    );
+    speakingTimer = setInterval(function () {
+
+        moveEyesRandomly();
+
+    }, 650);
 }
 
 
@@ -305,24 +331,40 @@ function stopSpeakingAnimation() {
 }
 
 
+/* =========================================================
+   10. THINKING ANIMATION
+   ========================================================= */
+
+function stopThinkingAnimation() {
+
+    if (app) {
+        app.classList.remove("thinking");
+    }
+}
+
+
+/* =========================================================
+   11. EYE MOVEMENT
+   ========================================================= */
+
 function moveEyesRandomly() {
 
     const x =
-        Math.round(Math.random() * 14 - 7);
+        Math.round((Math.random() * 14) - 7);
 
     const y =
-        Math.round(Math.random() * 10 - 5);
+        Math.round((Math.random() * 10) - 5);
 
     if (leftPupil) {
 
         leftPupil.style.transform =
-            `translate(${x}px,${y}px)`;
+            `translate(${x}px, ${y}px)`;
     }
 
     if (rightPupil) {
 
         rightPupil.style.transform =
-            `translate(${x}px,${y}px)`;
+            `translate(${x}px, ${y}px)`;
     }
 }
 
@@ -331,37 +373,65 @@ function resetEyes() {
 
     if (leftPupil) {
         leftPupil.style.transform =
-            "translate(0,0)";
+            "translate(0, 0)";
     }
 
     if (rightPupil) {
         rightPupil.style.transform =
-            "translate(0,0)";
+            "translate(0, 0)";
     }
 }
 
 
 /* =========================================================
-   10. BLINK
+   12. MOUSE EYE TRACKING
    ========================================================= */
 
-function blink() {
+document.addEventListener("mousemove", function (event) {
 
     if (!leftEye || !rightEye) {
         return;
     }
 
-    leftEye.classList.add("blink");
-    rightEye.classList.add("blink");
+    const screenX =
+        window.innerWidth / 2;
 
-    setTimeout(function () {
+    const screenY =
+        window.innerHeight / 2;
 
-        leftEye.classList.remove("blink");
-        rightEye.classList.remove("blink");
+    let dx =
+        (event.clientX - screenX) /
+        screenX;
 
-    }, 150);
-}
+    let dy =
+        (event.clientY - screenY) /
+        screenY;
 
+    dx = Math.max(-1, Math.min(1, dx));
+
+    dy = Math.max(-1, Math.min(1, dy));
+
+    const moveX = dx * 7;
+
+    const moveY = dy * 5;
+
+    if (leftPupil) {
+
+        leftPupil.style.transform =
+            `translate(${moveX}px, ${moveY}px)`;
+    }
+
+    if (rightPupil) {
+
+        rightPupil.style.transform =
+            `translate(${moveX}px, ${moveY}px)`;
+    }
+});
+
+
+/* =========================================================
+   13. BLINK SYSTEM
+   ========================================================= */
 
 function scheduleBlink() {
 
@@ -377,1104 +447,28 @@ function scheduleBlink() {
 }
 
 
-/* =========================================================
-   11. AUTO INTERNAL PANEL SYSTEM
-   ========================================================= */
+function blink() {
 
-function createInternalPanels() {
-
-    if (document.getElementById("apexInternalLayer")) {
+    if (!leftEye || !rightEye) {
         return;
     }
 
-    const layer =
-        document.createElement("div");
+    leftEye.classList.add("blink");
 
-    layer.id = "apexInternalLayer";
-
-    layer.innerHTML = `
-
-        <div id="apexMapPanel"
-             class="apex-internal-panel">
-
-            <div class="apex-panel-header">
-
-                <div>
-                    <div class="apex-panel-title">
-                        APEX MAP
-                    </div>
-
-                    <div class="apex-panel-subtitle">
-                        LIVE GPS LOCATION
-                    </div>
-                </div>
-
-                <button
-                    class="apex-close-btn"
-                    data-close="map">
-                    ✕
-                </button>
-
-            </div>
-
-            <div id="apexMapArea">
-
-                <div class="apex-map-loading">
-
-                    <div class="apex-loader"></div>
-
-                    <div>
-                        REQUESTING GPS LOCATION
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="apex-map-info">
-
-                <div>
-                    <span>LATITUDE</span>
-                    <strong id="apexLat">--</strong>
-                </div>
-
-                <div>
-                    <span>LONGITUDE</span>
-                    <strong id="apexLng">--</strong>
-                </div>
-
-                <div>
-                    <span>ACCURACY</span>
-                    <strong id="apexAccuracy">--</strong>
-                </div>
-
-            </div>
-
-            <button
-                id="apexOpenMapBtn"
-                class="apex-panel-action">
-                OPEN MAP
-            </button>
-
-        </div>
-
-
-        <div id="apexSirenPanel"
-             class="apex-internal-panel">
-
-            <div class="apex-panel-header">
-
-                <div>
-                    <div class="apex-panel-title">
-                        APEX SIREN
-                    </div>
-
-                    <div class="apex-panel-subtitle">
-                        INTERNAL EMERGENCY SYSTEM
-                    </div>
-                </div>
-
-                <button
-                    class="apex-close-btn"
-                    data-close="siren">
-                    ✕
-                </button>
-
-            </div>
-
-            <div class="apex-siren-core">
-
-                <div
-                    id="apexSirenRing"
-                    class="apex-siren-ring">
-
-                    <div class="apex-siren-center">
-                        SIREN
-                    </div>
-
-                </div>
-
-                <div
-                    id="apexSirenStatus"
-                    class="apex-siren-status">
-                    SYSTEM READY
-                </div>
-
-            </div>
-
-            <div class="apex-siren-buttons">
-
-                <button
-                    id="apexSirenStart"
-                    class="apex-panel-action danger">
-                    START SIREN
-                </button>
-
-                <button
-                    id="apexSirenStop"
-                    class="apex-panel-action">
-                    STOP SIREN
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <div id="apexFlashlightPanel"
-             class="apex-internal-panel">
-
-            <div class="apex-panel-header">
-
-                <div>
-                    <div class="apex-panel-title">
-                        APEX FLASHLIGHT
-                    </div>
-
-                    <div class="apex-panel-subtitle">
-                        DEVICE TORCH CONTROL
-                    </div>
-                </div>
-
-                <button
-                    class="apex-close-btn"
-                    data-close="flashlight">
-                    ✕
-                </button>
-
-            </div>
-
-            <div class="apex-flash-core">
-
-                <div
-                    id="apexFlashIcon"
-                    class="apex-flash-icon">
-                    🔦
-                </div>
-
-                <div
-                    id="apexFlashStatus"
-                    class="apex-flash-status">
-                    FLASHLIGHT OFF
-                </div>
-
-            </div>
-
-            <button
-                id="apexFlashToggle"
-                class="apex-panel-action">
-                TURN ON
-            </button>
-
-            <div class="apex-flash-note">
-                Mobile browser/device support required.
-            </div>
-
-        </div>
-
-    `;
-
-    document.body.appendChild(layer);
-
-
-    /* Close buttons */
-
-    layer.querySelectorAll(
-        "[data-close]"
-    ).forEach(function (button) {
-
-        button.addEventListener(
-            "click",
-            function () {
-
-                closeInternalPanel(
-                    button.dataset.close
-                );
-            }
-        );
-    });
-
-
-    /* Siren buttons */
-
-    const sirenStart =
-        document.getElementById(
-            "apexSirenStart"
-        );
-
-    const sirenStop =
-        document.getElementById(
-            "apexSirenStop"
-        );
-
-
-    if (sirenStart) {
-
-        sirenStart.addEventListener(
-            "click",
-            startSiren
-        );
-    }
-
-
-    if (sirenStop) {
-
-        sirenStop.addEventListener(
-            "click",
-            stopSiren
-        );
-    }
-
-
-    /* Flashlight */
-
-    const flashButton =
-        document.getElementById(
-            "apexFlashToggle"
-        );
-
-    if (flashButton) {
-
-        flashButton.addEventListener(
-            "click",
-            toggleInternalFlashlight
-        );
-    }
-
-
-    /* Map */
-
-    const openMapButton =
-        document.getElementById(
-            "apexOpenMapBtn"
-        );
-
-    if (openMapButton) {
-
-        openMapButton.addEventListener(
-            "click",
-            openCurrentLocationInMaps
-        );
-    }
-}
-
-
-/* =========================================================
-   12. INTERNAL PANEL
-   ========================================================= */
-
-function closeAllInternalPanels() {
-
-    document.querySelectorAll(
-        ".apex-internal-panel"
-    ).forEach(function (panel) {
-
-        panel.classList.remove("active");
-    });
-}
-
-
-function closeInternalPanel(type) {
-
-    const panel =
-        document.getElementById(
-            `apex${capitalize(type)}Panel`
-        );
-
-    if (panel) {
-        panel.classList.remove("active");
-    }
-}
-
-
-function openInternalPanel(type) {
-
-    createInternalPanels();
-
-    closeAllInternalPanels();
-
-    const panel =
-        document.getElementById(
-            `apex${capitalize(type)}Panel`
-        );
-
-    if (panel) {
-
-        panel.classList.add("active");
-
-        setTimeout(function () {
-
-            panel.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-
-        }, 50);
-    }
-}
-
-
-function capitalize(text) {
-
-    return text.charAt(0).toUpperCase() +
-           text.slice(1);
-}
-
-
-/* =========================================================
-   13. INTERNAL MAP
-   ========================================================= */
-
-function openInternalMap() {
-
-    createInternalPanels();
-
-    openInternalPanel("map");
-
-    const mapArea =
-        document.getElementById(
-            "apexMapArea"
-        );
-
-    if (!navigator.geolocation) {
-
-        mapArea.innerHTML = `
-            <div class="apex-map-error">
-                GPS is not supported by this browser.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    mapArea.innerHTML = `
-        <div class="apex-map-loading">
-            <div class="apex-loader"></div>
-            <div>GETTING YOUR LOCATION...</div>
-        </div>
-    `;
-
-
-    navigator.geolocation.getCurrentPosition(
-
-        function (position) {
-
-            const lat =
-                position.coords.latitude;
-
-            const lng =
-                position.coords.longitude;
-
-            const accuracy =
-                position.coords.accuracy;
-
-
-            document.getElementById(
-                "apexLat"
-            ).textContent =
-                lat.toFixed(6);
-
-            document.getElementById(
-                "apexLng"
-            ).textContent =
-                lng.toFixed(6);
-
-            document.getElementById(
-                "apexAccuracy"
-            ).textContent =
-                `${Math.round(accuracy)} m`;
-
-
-            /*
-             * Map visual without external map API.
-             * The location is shown using coordinates
-             * and a browser-generated map link.
-             */
-
-            mapArea.innerHTML = `
-
-                <div class="apex-location-visual">
-
-                    <div class="apex-location-pulse"></div>
-
-                    <div class="apex-location-pin">
-                        📍
-                    </div>
-
-                    <div class="apex-location-text">
-                        <strong>
-                            YOUR CURRENT LOCATION
-                        </strong>
-
-                        <span>
-                            ${lat.toFixed(5)},
-                            ${lng.toFixed(5)}
-                        </span>
-                    </div>
-
-                </div>
-
-            `;
-
-        },
-
-        function (error) {
-
-            let message =
-                "Unable to get your location.";
-
-            if (error.code === 1) {
-                message =
-                    "Location permission was denied.";
-            }
-
-            if (error.code === 2) {
-                message =
-                    "Location is unavailable.";
-            }
-
-            if (error.code === 3) {
-                message =
-                    "Location request timed out.";
-            }
-
-
-            mapArea.innerHTML = `
-
-                <div class="apex-map-error">
-
-                    <div>
-                        📍
-                    </div>
-
-                    <strong>
-                        ${message}
-                    </strong>
-
-                    <small>
-                        Allow location permission
-                        and try again.
-                    </small>
-
-                </div>
-
-            `;
-
-        },
-
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        }
-    );
-}
-
-
-/* =========================================================
-   14. OPEN CURRENT LOCATION
-   ========================================================= */
-
-function openCurrentLocationInMaps() {
-
-    if (!navigator.geolocation) {
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-        function (position) {
-
-            const lat =
-                position.coords.latitude;
-
-            const lng =
-                position.coords.longitude;
-
-
-            const url =
-                `https://www.google.com/maps?q=${lat},${lng}`;
-
-
-            window.open(
-                url,
-                "_blank",
-                "noopener"
-            );
-        }
-    );
-}
-
-
-/* =========================================================
-   15. INTERNAL SIREN
-   ========================================================= */
-
-function startSiren() {
-
-    createInternalPanels();
-
-    const status =
-        document.getElementById(
-            "apexSirenStatus"
-        );
-
-    const ring =
-        document.getElementById(
-            "apexSirenRing"
-        );
-
-
-    if (sirenOscillator) {
-        return;
-    }
-
-
-    try {
-
-        const AudioContext =
-            window.AudioContext ||
-            window.webkitAudioContext;
-
-
-        if (!AudioContext) {
-
-            if (status) {
-                status.textContent =
-                    "AUDIO NOT SUPPORTED";
-            }
-
-            return;
-        }
-
-
-        sirenAudioContext =
-            new AudioContext();
-
-
-        sirenOscillator =
-            sirenAudioContext.createOscillator();
-
-
-        sirenGain =
-            sirenAudioContext.createGain();
-
-
-        sirenOscillator.type =
-            "sawtooth";
-
-
-        sirenGain.gain.value =
-            0.0001;
-
-
-        sirenOscillator.connect(
-            sirenGain
-        );
-
-        sirenGain.connect(
-            sirenAudioContext.destination
-        );
-
-
-        sirenOscillator.start();
-
-
-        let high = false;
-
-
-        sirenTimer =
-            setInterval(function () {
-
-                if (
-                    !sirenAudioContext ||
-                    !sirenOscillator ||
-                    !sirenGain
-                ) {
-                    return;
-                }
-
-
-                high = !high;
-
-
-                const frequency =
-                    high ? 880 : 520;
-
-
-                sirenOscillator
-                    .frequency
-                    .setTargetAtTime(
-                        frequency,
-                        sirenAudioContext.currentTime,
-                        0.04
-                    );
-
-
-                sirenGain
-                    .gain
-                    .setTargetAtTime(
-                        0.16,
-                        sirenAudioContext.currentTime,
-                        0.02
-                    );
-
-            }, 450);
-
-
-        if (status) {
-            status.textContent =
-                "SIREN ACTIVE";
-        }
-
-        if (ring) {
-            ring.classList.add(
-                "siren-active"
-            );
-        }
-
-
-        speak(
-            "Emergency siren activated.",
-            "en-IN"
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Siren error:",
-            error
-        );
-
-        stopSiren();
-    }
-}
-
-
-/* =========================================================
-   16. STOP SIREN
-   ========================================================= */
-
-function stopSiren() {
-
-    if (sirenTimer) {
-
-        clearInterval(sirenTimer);
-
-        sirenTimer = null;
-    }
-
-
-    if (sirenGain) {
-
-        try {
-
-            sirenGain.gain.setTargetAtTime(
-                0.0001,
-                sirenAudioContext.currentTime,
-                0.03
-            );
-
-        } catch (error) {}
-    }
-
-
-    if (sirenOscillator) {
-
-        try {
-            sirenOscillator.stop();
-        } catch (error) {}
-    }
-
-
-    if (sirenAudioContext) {
-
-        try {
-            sirenAudioContext.close();
-        } catch (error) {}
-    }
-
-
-    sirenOscillator = null;
-    sirenGain = null;
-    sirenAudioContext = null;
-
-
-    const status =
-        document.getElementById(
-            "apexSirenStatus"
-        );
-
-    const ring =
-        document.getElementById(
-            "apexSirenRing"
-        );
-
-
-    if (status) {
-        status.textContent =
-            "SYSTEM READY";
-    }
-
-    if (ring) {
-        ring.classList.remove(
-            "siren-active"
-        );
-    }
-}
-
-
-/* =========================================================
-   17. INTERNAL FLASHLIGHT
-   ========================================================= */
-
-async function toggleInternalFlashlight() {
-
-    createInternalPanels();
-
-    openInternalPanel(
-        "flashlight"
-    );
-
-
-    if (flashlightOn) {
-
-        await turnFlashlightOff();
-
-    } else {
-
-        await turnFlashlightOn();
-    }
-}
-
-
-/* =========================================================
-   18. FLASHLIGHT ON
-   ========================================================= */
-
-async function turnFlashlightOn() {
-
-    const status =
-        document.getElementById(
-            "apexFlashStatus"
-        );
-
-    const button =
-        document.getElementById(
-            "apexFlashToggle"
-        );
-
-    const icon =
-        document.getElementById(
-            "apexFlashIcon"
-        );
-
-
-    if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
-    ) {
-
-        if (status) {
-            status.textContent =
-                "FLASHLIGHT NOT SUPPORTED";
-        }
-
-        return;
-    }
-
-
-    try {
-
-        flashlightStream =
-            await navigator.mediaDevices.getUserMedia({
-
-                video: {
-                    facingMode: {
-                        ideal: "environment"
-                    }
-                },
-
-                audio: false
-            });
-
-
-        const tracks =
-            flashlightStream.getVideoTracks();
-
-
-        if (!tracks.length) {
-
-            throw new Error(
-                "No camera track available."
-            );
-        }
-
-
-        flashlightTrack =
-            tracks[0];
-
-
-        const capabilities =
-            flashlightTrack.getCapabilities
-                ? flashlightTrack.getCapabilities()
-                : {};
-
-
-        if (!capabilities.torch) {
-
-            flashlightStream
-                .getTracks()
-                .forEach(function (track) {
-                    track.stop();
-                });
-
-            flashlightStream = null;
-            flashlightTrack = null;
-
-
-            if (status) {
-                status.textContent =
-                    "TORCH NOT AVAILABLE";
-            }
-
-
-            speak(
-                "Flashlight is not supported on this device or browser.",
-                "en-IN"
-            );
-
-            return;
-        }
-
-
-        await flashlightTrack.applyConstraints({
-
-            advanced: [
-                {
-                    torch: true
-                }
-            ]
-        });
-
-
-        flashlightOn = true;
-
-
-        if (status) {
-            status.textContent =
-                "FLASHLIGHT ON";
-        }
-
-        if (button) {
-            button.textContent =
-                "TURN OFF";
-        }
-
-        if (icon) {
-            icon.classList.add("active");
-        }
-
-
-        speak(
-            "Flashlight turned on.",
-            "en-IN"
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Flashlight error:",
-            error
-        );
-
-
-        if (status) {
-            status.textContent =
-                "PERMISSION / TORCH ERROR";
-        }
-
-
-        speak(
-            "I could not turn on the flashlight. Please allow camera permission.",
-            "en-IN"
-        );
-    }
-}
-
-
-/* =========================================================
-   19. FLASHLIGHT OFF
-   ========================================================= */
-
-async function turnFlashlightOff() {
-
-    try {
-
-        if (flashlightTrack) {
-
-            const capabilities =
-                flashlightTrack.getCapabilities
-                    ? flashlightTrack.getCapabilities()
-                    : {};
-
-
-            if (capabilities.torch) {
-
-                await flashlightTrack.applyConstraints({
-
-                    advanced: [
-                        {
-                            torch: false
-                        }
-                    ]
-                });
-            }
-        }
-
-    } catch (error) {
-
-        console.log(
-            "Torch off:",
-            error
-        );
-    }
-
-
-    if (flashlightStream) {
-
-        flashlightStream
-            .getTracks()
-            .forEach(function (track) {
-                track.stop();
-            });
-    }
-
-
-    flashlightStream = null;
-    flashlightTrack = null;
-
-    flashlightOn = false;
-
-
-    const status =
-        document.getElementById(
-            "apexFlashStatus"
-        );
-
-    const button =
-        document.getElementById(
-            "apexFlashToggle"
-        );
-
-    const icon =
-        document.getElementById(
-            "apexFlashIcon"
-        );
-
-
-    if (status) {
-        status.textContent =
-            "FLASHLIGHT OFF";
-    }
-
-    if (button) {
-        button.textContent =
-            "TURN ON";
-    }
-
-    if (icon) {
-        icon.classList.remove(
-            "active"
-        );
-    }
-}
-
-
-/* =========================================================
-   20. EXTERNAL TOOL
-   ========================================================= */
-
-function openTool(
-    url,
-    language,
-    toolName
-) {
-
-    if (!url || url === "#") {
-
-        if (language === "hi-IN") {
-
-            speak(
-                `${toolName} का link अभी configure नहीं है।`,
-                language
-            );
-
-        } else if (language === "gu-IN") {
-
-            speak(
-                `${toolName} ની link હજી configure નથી.`,
-                language
-            );
-
-        } else {
-
-            speak(
-                `${toolName} link is not configured yet.`,
-                language
-            );
-        }
-
-        return;
-    }
-
-
-    if (language === "hi-IN") {
-
-        speak(
-            `${toolName} खोल रहा हूँ।`,
-            language
-        );
-
-    } else if (language === "gu-IN") {
-
-        speak(
-            `${toolName} ખોલી રહ્યો છું.`,
-            language
-        );
-
-    } else {
-
-        speak(
-            `Opening ${toolName}.`,
-            language
-        );
-    }
-
+    rightEye.classList.add("blink");
 
     setTimeout(function () {
 
-        if (url.startsWith("tel:")) {
+        leftEye.classList.remove("blink");
 
-            window.location.href = url;
+        rightEye.classList.remove("blink");
 
-        } else {
-
-            window.open(
-                url,
-                "_blank",
-                "noopener"
-            );
-        }
-
-    }, 900);
+    }, 150);
 }
 
 
 /* =========================================================
-   21. SPEECH RECOGNITION
+   14. SPEECH RECOGNITION
    ========================================================= */
 
 const SpeechRecognition =
@@ -1490,9 +484,12 @@ if (SpeechRecognition) {
         new SpeechRecognition();
 
     recognition.continuous = false;
+
     recognition.interimResults = true;
+
     recognition.maxAlternatives = 1;
-    recognition.lang = "en-IN";
+
+    recognition.lang = currentLanguage;
 
 
     recognition.onstart = function () {
@@ -1506,8 +503,8 @@ if (SpeechRecognition) {
     recognition.onresult = function (event) {
 
         let finalText = "";
-        let interimText = "";
 
+        let interimText = "";
 
         for (
             let i = event.resultIndex;
@@ -1517,7 +514,6 @@ if (SpeechRecognition) {
 
             const transcript =
                 event.results[i][0].transcript;
-
 
             if (event.results[i].isFinal) {
 
@@ -1539,9 +535,7 @@ if (SpeechRecognition) {
 
         if (finalText.trim()) {
 
-            processCommand(
-                finalText.trim()
-            );
+            processCommand(finalText.trim());
         }
     };
 
@@ -1549,7 +543,7 @@ if (SpeechRecognition) {
     recognition.onerror = function (event) {
 
         console.log(
-            "Speech recognition:",
+            "APEX Speech Error:",
             event.error
         );
 
@@ -1564,12 +558,8 @@ if (SpeechRecognition) {
         isListening = false;
 
         if (
-            !app?.classList.contains(
-                "speaking"
-            ) &&
-            !app?.classList.contains(
-                "thinking"
-            )
+            !app.classList.contains("speaking") &&
+            !app.classList.contains("thinking")
         ) {
 
             setState("ready");
@@ -1585,7 +575,7 @@ if (SpeechRecognition) {
 
 
 /* =========================================================
-   22. START LISTENING
+   15. START LISTENING
    ========================================================= */
 
 function startListening() {
@@ -1613,11 +603,16 @@ function startListening() {
 
     window.speechSynthesis.cancel();
 
+    currentLanguage =
+        detectLanguage(
+            commandInput?.value || ""
+        );
+
+    recognition.lang =
+        currentLanguage;
+
 
     try {
-
-        recognition.lang =
-            currentLanguage;
 
         recognition.start();
 
@@ -1632,7 +627,97 @@ function startListening() {
 
 
 /* =========================================================
-   23. COMMAND NORMALIZATION
+   16. OPEN TOOL
+   ========================================================= */
+
+function openTool(
+    url,
+    language,
+    toolName
+) {
+
+    if (!url || url === "#") {
+
+        if (language === "hi-IN") {
+
+            speak(
+                `${toolName} ka link abhi configure nahi hai.`,
+                language
+            );
+
+        } else if (language === "gu-IN") {
+
+            speak(
+                `${toolName} ની લિંક હજી configure નથી.`,
+                language
+            );
+
+        } else {
+
+            speak(
+                `${toolName} link is not configured yet.`,
+                language
+            );
+        }
+
+        return;
+    }
+
+
+    let message;
+
+
+    if (language === "hi-IN") {
+
+        message =
+            `${toolName} खोल रहा हूँ।`;
+
+    } else if (language === "gu-IN") {
+
+        message =
+            `${toolName} ખોલી રહ્યો છું.`;
+
+    } else {
+
+        message =
+            `Opening ${toolName}.`;
+    }
+
+
+    speak(message, language);
+
+
+    setTimeout(function () {
+
+        try {
+
+            if (url.startsWith("tel:")) {
+
+                window.location.href = url;
+
+            } else {
+
+                window.open(
+                    url,
+                    "_blank",
+                    "noopener"
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Tool opening error:",
+                error
+            );
+        }
+
+    }, 900);
+}
+
+
+/* =========================================================
+   17. COMMAND NORMALIZATION
    ========================================================= */
 
 function normalizeCommand(text) {
@@ -1645,19 +730,18 @@ function normalizeCommand(text) {
 
 
 /* =========================================================
-   24. COMMAND ROUTER
+   18. COMMAND ROUTER
    ========================================================= */
 
-function routeCommand(
-    text,
-    language
-) {
+function routeCommand(text, language) {
 
     const lower =
         normalizeCommand(text);
 
 
-    /* ================= STOP ================= */
+    /* =====================================================
+       STOP
+       ===================================================== */
 
     if (
         lower === "stop" ||
@@ -1677,85 +761,240 @@ function routeCommand(
     }
 
 
-    /* ================= MAP ================= */
+    /* =====================================================
+       GREETING
+       ===================================================== */
+
+    if (
+        lower.includes("hello") ||
+        lower.includes("hi apex") ||
+        lower.includes("hey apex") ||
+        lower.includes("नमस्ते") ||
+        lower.includes("हेलो") ||
+        lower.includes("હેલો") ||
+        lower.includes("નમસ્તે")
+    ) {
+
+        if (language === "hi-IN") {
+
+            speak(
+                "नमस्ते। मैं APEX हूँ। मैं आपकी सहायता के लिए तैयार हूँ।",
+                language
+            );
+
+        } else if (language === "gu-IN") {
+
+            speak(
+                "નમસ્તે. હું APEX છું. હું તમારી મદદ માટે તૈયાર છું.",
+                language
+            );
+
+        } else {
+
+            speak(
+                "Hello. I am APEX. I am ready to assist you.",
+                language
+            );
+        }
+
+        return;
+    }
+
+
+    /* =====================================================
+       WHO ARE YOU
+       ===================================================== */
+
+    if (
+        lower.includes("who are you") ||
+        lower.includes("your name") ||
+        lower.includes("आप कौन हो") ||
+        lower.includes("तुम कौन हो") ||
+        lower.includes("તમારું નામ") ||
+        lower.includes("તમે કોણ")
+    ) {
+
+        if (language === "hi-IN") {
+
+            speak(
+                "मैं APEX हूँ, आपका AI voice assistant.",
+                language
+            );
+
+        } else if (language === "gu-IN") {
+
+            speak(
+                "હું APEX છું, તમારો AI voice assistant.",
+                language
+            );
+
+        } else {
+
+            speak(
+                "I am APEX, your AI voice assistant.",
+                language
+            );
+        }
+
+        return;
+    }
+
+
+    /* =====================================================
+       TIME
+       ===================================================== */
+
+    if (
+        lower.includes("time") ||
+        lower.includes("समय") ||
+        lower.includes("टाइम") ||
+        lower.includes("સમય") ||
+        lower.includes("ટાઈમ")
+    ) {
+
+        const now = new Date();
+
+        const time =
+            now.toLocaleTimeString(
+                [],
+                {
+                    hour: "numeric",
+                    minute: "2-digit"
+                }
+            );
+
+
+        if (language === "hi-IN") {
+
+            speak(
+                `अभी समय ${time} है।`,
+                language
+            );
+
+        } else if (language === "gu-IN") {
+
+            speak(
+                `અત્યારે સમય ${time} છે.`,
+                language
+            );
+
+        } else {
+
+            speak(
+                `The current time is ${time}.`,
+                language
+            );
+        }
+
+        return;
+    }
+
+
+    /* =====================================================
+       DATE
+       ===================================================== */
+
+    if (
+        lower.includes("date") ||
+        lower.includes("today") ||
+        lower.includes("आज") ||
+        lower.includes("तारीख") ||
+        lower.includes("આજે") ||
+        lower.includes("તારીખ")
+    ) {
+
+        const now = new Date();
+
+        const date =
+            now.toLocaleDateString(
+                [],
+                {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                }
+            );
+
+
+        if (language === "hi-IN") {
+
+            speak(
+                `आज की तारीख ${date} है।`,
+                language
+            );
+
+        } else if (language === "gu-IN") {
+
+            speak(
+                `આજની તારીખ ${date} છે.`,
+                language
+            );
+
+        } else {
+
+            speak(
+                `Today's date is ${date}.`,
+                language
+            );
+        }
+
+        return;
+    }
+
+
+    /* =====================================================
+       MAP
+       ===================================================== */
 
     if (
         lower.includes("map") ||
-        lower.includes("map kholo") ||
         lower.includes("open map") ||
+        lower.includes("map kholo") ||
         lower.includes("मैप") ||
         lower.includes("मैप खोलो") ||
         lower.includes("नक्शा") ||
         lower.includes("નકશો") ||
-        lower.includes("મેપ") ||
-        lower.includes("મેપ ખોલો")
+        lower.includes("મેપ")
     ) {
 
-        openInternalMap();
-
-        speak(
-            language === "hi-IN"
-                ? "मैप खोल रहा हूँ।"
-                : language === "gu-IN"
-                    ? "મેપ ખોલી રહ્યો છું."
-                    : "Opening internal map.",
-            language
+        openTool(
+            APEX_LINKS.map,
+            language,
+            "Map"
         );
 
         return;
     }
 
 
-    /* ================= SIREN ================= */
+    /* =====================================================
+       SIREN
+       ===================================================== */
 
     if (
         lower.includes("siren") ||
-        lower.includes("sos siren") ||
+        lower.includes("sos") ||
         lower.includes("siren kholo") ||
         lower.includes("सायरन") ||
         lower.includes("सायरन खोलो") ||
-        lower.includes("एसओएस सायरन") ||
+        lower.includes("एसओएस") ||
         lower.includes("સાયરન") ||
-        lower.includes("સાયરન ખોલો")
+        lower.includes("SOS")
     ) {
 
-        openInternalPanel("siren");
-
-        speak(
-            language === "hi-IN"
-                ? "सायरन सिस्टम खोल रहा हूँ।"
-                : language === "gu-IN"
-                    ? "સાયરન સિસ્ટમ ખોલી રહ્યો છું."
-                    : "Opening internal siren.",
-            language
+        openTool(
+            APEX_LINKS.siren,
+            language,
+            "Siren"
         );
 
         return;
     }
 
 
-    /* ================= FLASHLIGHT ================= */
-
-    if (
-        lower.includes("flashlight") ||
-        lower.includes("flash light") ||
-        lower.includes("torch") ||
-        lower.includes("torch on") ||
-        lower.includes("flashlight on") ||
-        lower.includes("टॉर्च") ||
-        lower.includes("फ्लैशलाइट") ||
-        lower.includes("टॉर्च चालू") ||
-        lower.includes("ટોર્ચ") ||
-        lower.includes("ફ્લેશલાઇટ")
-    ) {
-
-        toggleInternalFlashlight();
-
-        return;
-    }
-
-
-    /* ================= QR ================= */
+    /* =====================================================
+       QR GENERATOR
+       ===================================================== */
 
     if (
         lower.includes("qr") ||
@@ -1777,7 +1016,9 @@ function routeCommand(
     }
 
 
-    /* ================= CAMERA ================= */
+    /* =====================================================
+       SMART CAMERA
+       ===================================================== */
 
     if (
         lower.includes("camera") ||
@@ -1785,6 +1026,7 @@ function routeCommand(
         lower.includes("camera kholo") ||
         lower.includes("कैमरा") ||
         lower.includes("कैमरा खोलो") ||
+        lower.includes("कैमरा खोल") ||
         lower.includes("કેમેરા") ||
         lower.includes("કેમેરા ખોલો")
     ) {
@@ -1799,7 +1041,9 @@ function routeCommand(
     }
 
 
-    /* ================= AI VOICE ================= */
+    /* =====================================================
+       AI VOICE ASSISTANT
+       ===================================================== */
 
     if (
         lower.includes("ai voice") ||
@@ -1807,10 +1051,10 @@ function routeCommand(
         lower.includes("voice assistant") ||
         lower.includes("alexa") ||
         lower.includes("ai assistant") ||
-        lower.includes("वॉइस असिस्टेंट") ||
         lower.includes("एआई वॉइस") ||
-        lower.includes("વોઇસ આસિસ્ટન્ટ") ||
-        lower.includes("એઆઈ વોઇસ")
+        lower.includes("वॉइस असिस्टेंट") ||
+        lower.includes("એઆઈ વોઇસ") ||
+        lower.includes("વોઇસ આસિસ્ટન્ટ")
     ) {
 
         openTool(
@@ -1823,7 +1067,9 @@ function routeCommand(
     }
 
 
-    /* ================= INSTAGRAM ================= */
+    /* =====================================================
+       INSTAGRAM
+       ===================================================== */
 
     if (
         lower.includes("instagram") ||
@@ -1843,12 +1089,15 @@ function routeCommand(
     }
 
 
-    /* ================= FACEBOOK ================= */
+    /* =====================================================
+       FACEBOOK
+       ===================================================== */
 
     if (
         lower.includes("facebook") ||
         lower.includes("fb") ||
         lower.includes("फेसबुक") ||
+        lower.includes("फेसबुक खोलो") ||
         lower.includes("ફેસબુક")
     ) {
 
@@ -1862,13 +1111,17 @@ function routeCommand(
     }
 
 
-    /* ================= WHATSAPP ================= */
+    /* =====================================================
+       WHATSAPP
+       ===================================================== */
 
     if (
         lower.includes("whatsapp") ||
         lower.includes("whats app") ||
         lower.includes("व्हाट्सएप") ||
-        lower.includes("વોટ્સએપ")
+        lower.includes("व्हाट्सएप खोलो") ||
+        lower.includes("વોટ્સએપ") ||
+        lower.includes("વોટ્સએપ ખોલો")
     ) {
 
         openTool(
@@ -1881,12 +1134,38 @@ function routeCommand(
     }
 
 
-    /* ================= CALL ================= */
+    /* =====================================================
+       FLASHLIGHT
+       ===================================================== */
+
+    if (
+        lower.includes("flashlight") ||
+        lower.includes("flash light") ||
+        lower.includes("torch") ||
+        lower.includes("टॉर्च") ||
+        lower.includes("फ्लैशलाइट") ||
+        lower.includes("ફ્લેશલાઇટ") ||
+        lower.includes("ટોર્ચ")
+    ) {
+
+        openTool(
+            APEX_LINKS.flashlight,
+            language,
+            "Flashlight"
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       CALL
+       ===================================================== */
 
     if (
         lower === "call" ||
         lower.includes("make a call") ||
-        lower.includes("call karo") ||
+        lower.includes("call kholo") ||
         lower.includes("फोन करो") ||
         lower.includes("कॉल करो") ||
         lower.includes("कॉल") ||
@@ -1905,7 +1184,9 @@ function routeCommand(
     }
 
 
-    /* ================= GOOGLE ================= */
+    /* =====================================================
+       GOOGLE
+       ===================================================== */
 
     if (
         lower.includes("google") ||
@@ -1926,7 +1207,9 @@ function routeCommand(
     }
 
 
-    /* ================= YOUTUBE ================= */
+    /* =====================================================
+       YOUTUBE
+       ===================================================== */
 
     if (
         lower.includes("youtube") ||
@@ -1947,13 +1230,16 @@ function routeCommand(
     }
 
 
-    /* ================= LOCATION ================= */
+    /* =====================================================
+       LIVE LOCATION
+       ===================================================== */
 
     if (
+        lower.includes("location") ||
         lower.includes("live location") ||
         lower.includes("location kholo") ||
-        lower.includes("location") ||
         lower.includes("लोकेशन") ||
+        lower.includes("लोकेशन खोलो") ||
         lower.includes("लाइव लोकेशन") ||
         lower.includes("લોકેશન") ||
         lower.includes("લાઇવ લોકેશન")
@@ -1969,10 +1255,13 @@ function routeCommand(
     }
 
 
-    /* ================= COMPASS ================= */
+    /* =====================================================
+       COMPASS
+       ===================================================== */
 
     if (
         lower.includes("compass") ||
+        lower.includes("compass kholo") ||
         lower.includes("कम्पास") ||
         lower.includes("कंपास") ||
         lower.includes("कम्पास खोलो") ||
@@ -1991,12 +1280,15 @@ function routeCommand(
     }
 
 
-    /* ================= CBRND HOME ================= */
+    /* =====================================================
+       CBRND HOME
+       ===================================================== */
 
     if (
         lower.includes("cbrnd home") ||
         lower.includes("smart home") ||
         lower.includes("cbrnd kholo") ||
+        lower.includes("सीबीआरएनडी होम") ||
         lower.includes("स्मार्ट होम") ||
         lower.includes("સીબીઆરએનડી હોમ") ||
         lower.includes("સ્માર્ટ હોમ")
@@ -2012,138 +1304,75 @@ function routeCommand(
     }
 
 
-    /* ================= GREETING ================= */
+    /* =====================================================
+       ACTIVATE
+       ===================================================== */
 
     if (
-        lower.includes("hello") ||
-        lower.includes("hi apex") ||
-        lower.includes("hey apex") ||
-        lower.includes("नमस्ते") ||
-        lower.includes("हेलो") ||
-        lower.includes("હેલો") ||
-        lower.includes("નમસ્તે")
+        lower.includes("activate") ||
+        lower.includes("activate apex") ||
+        lower.includes("एक्टिवेट") ||
+        lower.includes("एपेक्स एक्टिवेट") ||
+        lower.includes("એક્ટિવેટ") ||
+        lower.includes("એપેક્સ એક્ટિવેટ")
     ) {
 
-        speak(
-            language === "hi-IN"
-                ? "नमस्ते। मैं APEX हूँ।"
-                : language === "gu-IN"
-                    ? "નમસ્તે. હું APEX છું."
-                    : "Hello. I am APEX.",
-            language
-        );
+        if (language === "hi-IN") {
 
-        return;
-    }
-
-
-    /* ================= WHO ARE YOU ================= */
-
-    if (
-        lower.includes("who are you") ||
-        lower.includes("your name") ||
-        lower.includes("आप कौन हो") ||
-        lower.includes("तुम कौन हो") ||
-        lower.includes("તમારું નામ") ||
-        lower.includes("તમે કોણ")
-    ) {
-
-        speak(
-            language === "hi-IN"
-                ? "मैं APEX हूँ, आपका AI voice assistant."
-                : language === "gu-IN"
-                    ? "હું APEX છું, તમારો AI voice assistant."
-                    : "I am APEX, your AI voice assistant.",
-            language
-        );
-
-        return;
-    }
-
-
-    /* ================= TIME ================= */
-
-    if (
-        lower.includes("time") ||
-        lower.includes("समय") ||
-        lower.includes("टाइम") ||
-        lower.includes("સમય") ||
-        lower.includes("ટાઈમ")
-    ) {
-
-        const time =
-            new Date().toLocaleTimeString(
-                [],
-                {
-                    hour: "numeric",
-                    minute: "2-digit"
-                }
+            speak(
+                "APEX सिस्टम एक्टिवेट हो गया है।",
+                language
             );
 
+        } else if (language === "gu-IN") {
 
-        speak(
-            language === "hi-IN"
-                ? `अभी समय ${time} है।`
-                : language === "gu-IN"
-                    ? `અત્યારે સમય ${time} છે.`
-                    : `The current time is ${time}.`,
-            language
-        );
-
-        return;
-    }
-
-
-    /* ================= DATE ================= */
-
-    if (
-        lower.includes("date") ||
-        lower.includes("today") ||
-        lower.includes("आज") ||
-        lower.includes("तारीख") ||
-        lower.includes("આજે") ||
-        lower.includes("તારીખ")
-    ) {
-
-        const date =
-            new Date().toLocaleDateString(
-                [],
-                {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric"
-                }
+            speak(
+                "APEX સિસ્ટમ એક્ટિવેટ થઈ ગઈ છે.",
+                language
             );
 
+        } else {
 
-        speak(
-            language === "hi-IN"
-                ? `आज की तारीख ${date} है।`
-                : language === "gu-IN"
-                    ? `આજની તારીખ ${date} છે.`
-                    : `Today's date is ${date}.`,
-            language
-        );
+            speak(
+                "APEX system is activated and ready.",
+                language
+            );
+        }
 
         return;
     }
 
 
-    /* ================= DEFAULT ================= */
+    /* =====================================================
+       DEFAULT RESPONSE
+       ===================================================== */
 
-    speak(
-        language === "hi-IN"
-            ? `मैंने सुना: ${text}`
-            : language === "gu-IN"
-                ? `મેં સાંભળ્યું: ${text}`
-                : `I heard: ${text}`,
-        language
-    );
+    if (language === "hi-IN") {
+
+        speak(
+            `मैंने सुना: ${text}`,
+            language
+        );
+
+    } else if (language === "gu-IN") {
+
+        speak(
+            `મેં સાંભળ્યું: ${text}`,
+            language
+        );
+
+    } else {
+
+        speak(
+            `I heard: ${text}`,
+            language
+        );
+    }
 }
 
 
 /* =========================================================
-   25. PROCESS COMMAND
+   19. PROCESS COMMAND
    ========================================================= */
 
 function processCommand(text) {
@@ -2152,25 +1381,21 @@ function processCommand(text) {
         return;
     }
 
-
     const cleanText =
         text.trim();
-
 
     currentLanguage =
         detectLanguage(cleanText);
 
 
+    /* STOP must happen immediately */
+
     const lower =
         normalizeCommand(cleanText);
-
-
-    /* Immediate stop */
 
     if (
         lower === "stop" ||
         lower.includes("stop apex") ||
-        lower.includes("stop voice") ||
         lower.includes("रुक जाओ") ||
         lower.includes("बंद करो") ||
         lower.includes("બંધ કરો")
@@ -2192,12 +1417,12 @@ function processCommand(text) {
             currentLanguage
         );
 
-    }, 300);
+    }, 350);
 }
 
 
 /* =========================================================
-   26. BUTTONS
+   20. BUTTON EVENTS
    ========================================================= */
 
 if (activateBtn) {
@@ -2219,7 +1444,10 @@ if (listenBtn) {
 
     listenBtn.addEventListener(
         "click",
-        startListening
+        function () {
+
+            startListening();
+        }
     );
 }
 
@@ -2239,7 +1467,7 @@ if (thinkBtn) {
                     "en-IN"
                 );
 
-            }, 600);
+            }, 700);
         }
     );
 }
@@ -2251,8 +1479,12 @@ if (sendBtn) {
         "click",
         function () {
 
+            if (!commandInput) {
+                return;
+            }
+
             processCommand(
-                commandInput?.value || ""
+                commandInput.value
             );
         }
     );
@@ -2260,7 +1492,7 @@ if (sendBtn) {
 
 
 /* =========================================================
-   27. ENTER KEY
+   21. ENTER KEY
    ========================================================= */
 
 if (commandInput) {
@@ -2283,7 +1515,7 @@ if (commandInput) {
 
 
 /* =========================================================
-   28. SPACE = LISTEN
+   22. SPACE = VOICE
    ========================================================= */
 
 document.addEventListener(
@@ -2294,12 +1526,10 @@ document.addEventListener(
             return;
         }
 
-
         const target =
             event.target;
 
-
-        const typing =
+        const isTyping =
             target &&
             (
                 target.tagName === "INPUT" ||
@@ -2308,7 +1538,7 @@ document.addEventListener(
             );
 
 
-        if (typing) {
+        if (isTyping) {
             return;
         }
 
@@ -2321,7 +1551,7 @@ document.addEventListener(
 
 
 /* =========================================================
-   29. VISIBILITY
+   23. VISIBILITY
    ========================================================= */
 
 document.addEventListener(
@@ -2341,15 +1571,12 @@ document.addEventListener(
 
             } catch (error) {}
 
-
             if ("speechSynthesis" in window) {
+
                 window.speechSynthesis.cancel();
             }
 
-
             stopSpeakingAnimation();
-
-            stopSiren();
 
             setState("ready");
         }
@@ -2358,27 +1585,10 @@ document.addEventListener(
 
 
 /* =========================================================
-   30. CLEANUP
-   ========================================================= */
-
-window.addEventListener(
-    "beforeunload",
-    function () {
-
-        stopSiren();
-
-        turnFlashlightOff();
-    }
-);
-
-
-/* =========================================================
-   31. INIT
+   24. INITIALIZATION
    ========================================================= */
 
 function initApex() {
-
-    createInternalPanels();
 
     setState("ready");
 
@@ -2386,25 +1596,8 @@ function initApex() {
 
     scheduleBlink();
 
-
     console.log(
-        "================================"
-    );
-
-    console.log(
-        "APEX AI SYSTEM ONLINE"
-    );
-
-    console.log(
-        "Internal Map: READY"
-    );
-
-    console.log(
-        "Internal Siren: READY"
-    );
-
-    console.log(
-        "Internal Flashlight: READY"
+        "APEX AI SYSTEM INITIALIZED"
     );
 
     console.log(
@@ -2415,7 +1608,8 @@ function initApex() {
     );
 
     console.log(
-        "================================"
+        "APEX Links:",
+        APEX_LINKS
     );
 }
 
