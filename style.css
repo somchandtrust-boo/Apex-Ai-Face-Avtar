@@ -1,0 +1,1443 @@
+/* =========================================================
+   APEX AI — PREMIUM FACE UI
+   style.css
+   ========================================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bg:#03060c;
+    --panel:#08111d;
+    --panel2:#0c1827;
+
+    --cyan:#00eaff;
+    --cyan2:#00aaff;
+    --blue:#347cff;
+
+    --text:#e9fbff;
+    --muted:#7691a7;
+
+    --danger:#ff4268;
+
+    --glow:
+        0 0 10px rgba(0,234,255,.7),
+        0 0 30px rgba(0,170,255,.35),
+        0 0 70px rgba(0,170,255,.15);
+}
+
+html,
+body{
+    width:100%;
+    min-height:100%;
+}
+
+body{
+    min-height:100vh;
+
+    font-family:
+        Inter,
+        Segoe UI,
+        Arial,
+        sans-serif;
+
+    color:var(--text);
+
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(0,150,255,.12),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 20% 80%,
+            rgba(0,234,255,.06),
+            transparent 25%
+        ),
+        var(--bg);
+
+    overflow-x:hidden;
+}
+
+
+/* =========================================================
+   MAIN APP
+   ========================================================= */
+
+.apex-app{
+    min-height:100vh;
+
+    display:flex;
+    flex-direction:column;
+
+    position:relative;
+
+    overflow:hidden;
+
+    background:
+        linear-gradient(
+            rgba(0,234,255,.015) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(0,234,255,.015) 1px,
+            transparent 1px
+        );
+
+    background-size:40px 40px;
+}
+
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.top-bar{
+    width:100%;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:24px 34px;
+
+    border-bottom:1px solid rgba(0,234,255,.10);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(8,20,34,.82),
+            rgba(3,8,15,.45)
+        );
+
+    backdrop-filter:blur(14px);
+
+    z-index:20;
+}
+
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+
+.brand-dot{
+    width:12px;
+    height:12px;
+
+    border-radius:50%;
+
+    background:var(--cyan);
+
+    box-shadow:var(--glow);
+
+    animation:
+        statusPulse 1.7s infinite;
+}
+
+
+.brand-name{
+    font-size:20px;
+    font-weight:800;
+
+    letter-spacing:6px;
+
+    color:white;
+}
+
+
+.brand-status{
+    margin-top:3px;
+
+    font-size:9px;
+    letter-spacing:2px;
+
+    color:var(--muted);
+}
+
+
+.system-status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    padding:8px 13px;
+
+    border:1px solid rgba(0,234,255,.15);
+
+    border-radius:20px;
+
+    font-size:10px;
+    letter-spacing:2px;
+
+    color:#9eefff;
+
+    background:rgba(0,234,255,.035);
+}
+
+
+.status-light{
+    width:7px;
+    height:7px;
+
+    border-radius:50%;
+
+    background:#00ffb3;
+
+    box-shadow:
+        0 0 8px #00ffb3,
+        0 0 18px rgba(0,255,179,.7);
+
+    animation:statusPulse 1.5s infinite;
+}
+
+
+/* =========================================================
+   FACE STAGE
+   ========================================================= */
+
+.face-stage{
+    flex:1;
+
+    min-height:520px;
+
+    position:relative;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-direction:column;
+
+    padding:30px 20px 20px;
+}
+
+
+/* =========================================================
+   AMBIENT GLOW
+   ========================================================= */
+
+.ambient-glow{
+    position:absolute;
+
+    width:550px;
+    height:550px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0,220,255,.15),
+            rgba(0,100,255,.06) 35%,
+            transparent 70%
+        );
+
+    filter:blur(25px);
+
+    animation:
+        ambientPulse 4s ease-in-out infinite;
+
+    pointer-events:none;
+}
+
+
+/* =========================================================
+   APEX FACE
+   ========================================================= */
+
+.apex-face{
+    width:440px;
+    height:440px;
+
+    position:relative;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle at 50% 45%,
+            rgba(16,40,62,.9),
+            rgba(4,12,21,.97) 58%,
+            rgba(1,5,10,1) 100%
+        );
+
+    border:1px solid rgba(0,234,255,.25);
+
+    box-shadow:
+        inset 0 0 50px rgba(0,190,255,.08),
+        inset 0 0 120px rgba(0,80,160,.10),
+        0 0 35px rgba(0,190,255,.10);
+
+    overflow:hidden;
+
+    animation:
+        faceFloat 5s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   FACE HEAD
+   ========================================================= */
+
+.face-head{
+    width:76%;
+    height:68%;
+
+    position:relative;
+
+    border-radius:48% 48% 44% 44%;
+
+    background:
+        radial-gradient(
+            ellipse at 50% 35%,
+            rgba(18,50,73,.55),
+            rgba(3,12,20,.92) 65%
+        );
+
+    border:1px solid rgba(0,234,255,.13);
+
+    box-shadow:
+        inset 0 0 35px rgba(0,220,255,.05);
+
+    overflow:hidden;
+}
+
+
+/* =========================================================
+   EYES
+   ========================================================= */
+
+.eye{
+    position:absolute;
+
+    top:30%;
+
+    width:105px;
+    height:62px;
+
+    border-radius:50%;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    overflow:hidden;
+
+    background:
+        radial-gradient(
+            ellipse,
+            rgba(0,210,255,.15),
+            rgba(0,20,35,.65) 65%
+        );
+
+    border:1px solid rgba(0,234,255,.22);
+
+    box-shadow:
+        inset 0 0 20px rgba(0,234,255,.08),
+        0 0 20px rgba(0,234,255,.08);
+
+    transition:
+        transform .3s ease,
+        height .25s ease,
+        box-shadow .3s ease;
+}
+
+
+.eye-left{
+    left:9%;
+}
+
+
+.eye-right{
+    right:9%;
+}
+
+
+.eye-glow{
+    position:absolute;
+
+    width:80px;
+    height:40px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            ellipse,
+            rgba(0,234,255,.30),
+            transparent 70%
+        );
+
+    filter:blur(8px);
+}
+
+
+.eye-core{
+    width:45px;
+    height:45px;
+
+    border-radius:50%;
+
+    position:relative;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:
+        radial-gradient(
+            circle,
+            #dfffff 0%,
+            #00eaff 15%,
+            #008cff 42%,
+            #002a48 72%,
+            transparent 73%
+        );
+
+    box-shadow:
+        0 0 10px #00eaff,
+        0 0 25px rgba(0,234,255,.8),
+        0 0 45px rgba(0,130,255,.35);
+
+    animation:
+        eyePulse 2.4s ease-in-out infinite;
+}
+
+
+.eye-pupil{
+    width:14px;
+    height:22px;
+
+    border-radius:50%;
+
+    background:#00131f;
+
+    box-shadow:
+        0 0 8px rgba(0,234,255,.5);
+
+    transition:transform .15s ease;
+}
+
+
+/* =========================================================
+   SENSOR
+   ========================================================= */
+
+.face-sensor{
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    width:12px;
+    height:12px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(0,234,255,.7);
+
+    box-shadow:
+        0 0 8px rgba(0,234,255,.9),
+        0 0 20px rgba(0,234,255,.4);
+
+    opacity:.65;
+}
+
+
+.face-sensor span{
+    position:absolute;
+
+    inset:3px;
+
+    border-radius:50%;
+
+    background:var(--cyan);
+
+    box-shadow:0 0 8px var(--cyan);
+
+    animation:statusPulse 1.2s infinite;
+}
+
+
+/* =========================================================
+   MOUTH
+   ========================================================= */
+
+.apex-mouth{
+    position:absolute;
+
+    left:50%;
+    bottom:14%;
+
+    transform:translateX(-50%);
+
+    width:145px;
+    height:48px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            ellipse,
+            rgba(0,234,255,.10),
+            transparent 65%
+        );
+}
+
+
+.mouth-line{
+    position:absolute;
+
+    width:115px;
+    height:2px;
+
+    border-radius:10px;
+
+    background:rgba(0,234,255,.55);
+
+    box-shadow:
+        0 0 8px rgba(0,234,255,.8);
+
+    transition:
+        width .2s ease,
+        height .2s ease,
+        border-radius .2s ease;
+}
+
+
+.mouth-bars{
+    width:90px;
+    height:28px;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    gap:4px;
+
+    opacity:0;
+
+    transition:opacity .2s ease;
+}
+
+
+.mouth-bars span{
+    width:3px;
+    height:8px;
+
+    border-radius:5px;
+
+    background:var(--cyan);
+
+    box-shadow:
+        0 0 7px var(--cyan);
+
+    animation:voiceBar .7s ease-in-out infinite alternate;
+}
+
+
+.mouth-bars span:nth-child(2){
+    animation-delay:.08s;
+}
+
+.mouth-bars span:nth-child(3){
+    animation-delay:.16s;
+}
+
+.mouth-bars span:nth-child(4){
+    animation-delay:.24s;
+}
+
+.mouth-bars span:nth-child(5){
+    animation-delay:.32s;
+}
+
+.mouth-bars span:nth-child(6){
+    animation-delay:.40s;
+}
+
+.mouth-bars span:nth-child(7){
+    animation-delay:.48s;
+}
+
+
+/* =========================================================
+   FACE RINGS
+   ========================================================= */
+
+.face-ring{
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    border-radius:50%;
+
+    transform:
+        translate(-50%,-50%);
+
+    pointer-events:none;
+}
+
+
+.ring-1{
+    width:92%;
+    height:92%;
+
+    border:
+        1px solid
+        rgba(0,234,255,.10);
+
+    border-top-color:
+        rgba(0,234,255,.65);
+
+    animation:
+        rotateRing 12s linear infinite;
+}
+
+
+.ring-2{
+    width:101%;
+    height:101%;
+
+    border:
+        1px dashed
+        rgba(0,160,255,.16);
+
+    border-right-color:
+        rgba(0,234,255,.55);
+
+    animation:
+        rotateRingReverse 18s linear infinite;
+}
+
+
+.ring-3{
+    width:108%;
+    height:108%;
+
+    border:
+        1px solid
+        rgba(0,234,255,.05);
+
+    border-bottom-color:
+        rgba(0,234,255,.35);
+
+    animation:
+        rotateRing 25s linear infinite;
+}
+
+
+/* =========================================================
+   SCAN LINE
+   ========================================================= */
+
+.scan-line{
+    position:absolute;
+
+    left:8%;
+    right:8%;
+
+    height:1px;
+
+    top:8%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(0,234,255,.65),
+            transparent
+        );
+
+    box-shadow:
+        0 0 10px rgba(0,234,255,.7);
+
+    opacity:.5;
+
+    animation:
+        scanMove 4s linear infinite;
+}
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+.apex-state{
+    margin-top:32px;
+
+    text-align:center;
+
+    z-index:5;
+}
+
+
+#stateText{
+    font-size:13px;
+
+    font-weight:700;
+
+    letter-spacing:5px;
+
+    color:#d9fbff;
+
+    text-shadow:
+        0 0 12px rgba(0,234,255,.45);
+}
+
+
+#stateSubtext{
+    margin-top:8px;
+
+    font-size:9px;
+
+    letter-spacing:3px;
+
+    color:var(--muted);
+}
+
+
+/* =========================================================
+   CONTROL PANEL
+   ========================================================= */
+
+.control-panel{
+    width:100%;
+
+    display:flex;
+
+    justify-content:center;
+    align-items:center;
+
+    gap:12px;
+
+    padding:18px 20px;
+
+    border-top:
+        1px solid rgba(0,234,255,.08);
+
+    background:
+        rgba(3,9,16,.72);
+
+    backdrop-filter:blur(16px);
+}
+
+
+.control-btn{
+    min-width:130px;
+
+    height:46px;
+
+    padding:0 18px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:9px;
+
+    border:1px solid rgba(0,234,255,.15);
+
+    border-radius:12px;
+
+    color:#a9c9d9;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(13,30,47,.85),
+            rgba(6,15,25,.9)
+        );
+
+    cursor:pointer;
+
+    font-size:10px;
+    font-weight:700;
+
+    letter-spacing:1.5px;
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease,
+        color .2s ease;
+}
+
+
+.control-btn:hover{
+    transform:translateY(-2px);
+
+    color:white;
+
+    border-color:
+        rgba(0,234,255,.55);
+
+    box-shadow:
+        0 0 20px rgba(0,234,255,.12);
+}
+
+
+.control-btn:active{
+    transform:scale(.96);
+}
+
+
+.control-btn.primary{
+    color:#00141c;
+
+    border-color:var(--cyan);
+
+    background:
+        linear-gradient(
+            135deg,
+            #00eaff,
+            #008cff
+        );
+
+    box-shadow:
+        0 0 20px rgba(0,234,255,.22);
+}
+
+
+.control-btn.primary:hover{
+    color:#00141c;
+
+    box-shadow:
+        0 0 30px rgba(0,234,255,.4);
+}
+
+
+.btn-icon{
+    font-size:15px;
+}
+
+
+/* =========================================================
+   COMMAND PANEL
+   ========================================================= */
+
+.command-panel{
+    width:100%;
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:8px;
+
+    padding:
+        0 20px
+        18px;
+
+    background:
+        rgba(3,9,16,.72);
+}
+
+
+#commandInput{
+    width:min(500px,70vw);
+
+    height:44px;
+
+    padding:
+        0 16px;
+
+    border:
+        1px solid
+        rgba(0,234,255,.14);
+
+    border-radius:11px;
+
+    outline:none;
+
+    color:white;
+
+    background:
+        rgba(8,21,34,.9);
+
+    font-size:12px;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+
+#commandInput::placeholder{
+    color:#587386;
+}
+
+
+#commandInput:focus{
+    border-color:
+        rgba(0,234,255,.55);
+
+    box-shadow:
+        0 0 20px
+        rgba(0,234,255,.08);
+}
+
+
+#sendBtn{
+    height:44px;
+
+    padding:
+        0 20px;
+
+    border:1px solid
+        rgba(0,234,255,.35);
+
+    border-radius:11px;
+
+    color:#bdf8ff;
+
+    background:
+        rgba(0,234,255,.07);
+
+    cursor:pointer;
+
+    font-size:10px;
+
+    font-weight:700;
+
+    letter-spacing:1px;
+
+    transition:
+        .2s ease;
+}
+
+
+#sendBtn:hover{
+    background:
+        rgba(0,234,255,.15);
+
+    border-color:
+        var(--cyan);
+
+    box-shadow:
+        0 0 20px
+        rgba(0,234,255,.12);
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+footer{
+    min-height:34px;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    gap:10px;
+
+    color:#456074;
+
+    font-size:7px;
+
+    letter-spacing:2px;
+
+    background:#02060b;
+
+    border-top:
+        1px solid
+        rgba(0,234,255,.05);
+}
+
+
+.footer-separator{
+    color:#1e5368;
+}
+
+
+/* =========================================================
+   LISTENING STATE
+   ========================================================= */
+
+.apex-app.listening .eye{
+    box-shadow:
+        inset 0 0 30px rgba(0,234,255,.14),
+        0 0 35px rgba(0,234,255,.3);
+}
+
+
+.apex-app.listening .eye-core{
+    transform:scale(1.15);
+
+    box-shadow:
+        0 0 15px #00eaff,
+        0 0 35px rgba(0,234,255,.9),
+        0 0 65px rgba(0,130,255,.5);
+}
+
+
+.apex-app.listening .mouth-line{
+    width:75px;
+
+    box-shadow:
+        0 0 15px var(--cyan);
+}
+
+
+.apex-app.listening .scan-line{
+    animation-duration:1.5s;
+}
+
+
+/* =========================================================
+   SPEAKING STATE
+   ========================================================= */
+
+.apex-app.speaking .mouth-line{
+    opacity:0;
+}
+
+
+.apex-app.speaking .mouth-bars{
+    opacity:1;
+}
+
+
+.apex-app.speaking .eye-core{
+    animation:
+        eyePulse .9s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   THINKING STATE
+   ========================================================= */
+
+.apex-app.thinking .face-ring{
+    animation-duration:2.5s;
+}
+
+
+.apex-app.thinking .face-sensor{
+    opacity:1;
+
+    transform:
+        translate(-50%,-50%)
+        scale(1.5);
+}
+
+
+.apex-app.thinking .eye-core{
+    animation:
+        thinkingEye 1s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes statusPulse{
+
+    0%,
+    100%{
+        opacity:.45;
+        transform:scale(.9);
+    }
+
+    50%{
+        opacity:1;
+        transform:scale(1.12);
+    }
+}
+
+
+@keyframes ambientPulse{
+
+    0%,
+    100%{
+        transform:scale(.9);
+        opacity:.55;
+    }
+
+    50%{
+        transform:scale(1.08);
+        opacity:1;
+    }
+}
+
+
+@keyframes faceFloat{
+
+    0%,
+    100%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-7px);
+    }
+}
+
+
+@keyframes eyePulse{
+
+    0%,
+    100%{
+        transform:scale(1);
+    }
+
+    50%{
+        transform:scale(1.06);
+    }
+}
+
+
+@keyframes thinkingEye{
+
+    0%{
+        transform:
+            scale(.8)
+            translateX(-5px);
+    }
+
+    50%{
+        transform:
+            scale(1.15)
+            translateX(5px);
+    }
+
+    100%{
+        transform:
+            scale(.8)
+            translateX(-5px);
+    }
+}
+
+
+@keyframes voiceBar{
+
+    from{
+        height:5px;
+    }
+
+    to{
+        height:24px;
+    }
+}
+
+
+@keyframes rotateRing{
+
+    from{
+        transform:
+            translate(-50%,-50%)
+            rotate(0deg);
+    }
+
+    to{
+        transform:
+            translate(-50%,-50%)
+            rotate(360deg);
+    }
+}
+
+
+@keyframes rotateRingReverse{
+
+    from{
+        transform:
+            translate(-50%,-50%)
+            rotate(360deg);
+    }
+
+    to{
+        transform:
+            translate(-50%,-50%)
+            rotate(0deg);
+    }
+}
+
+
+@keyframes scanMove{
+
+    0%{
+        top:8%;
+        opacity:0;
+    }
+
+    10%{
+        opacity:.5;
+    }
+
+    50%{
+        opacity:.8;
+    }
+
+    90%{
+        opacity:.5;
+    }
+
+    100%{
+        top:92%;
+        opacity:0;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+   ========================================================= */
+
+@media(max-width:800px){
+
+    .top-bar{
+        padding:
+            18px 20px;
+    }
+
+    .face-stage{
+        min-height:470px;
+    }
+
+    .apex-face{
+        width:360px;
+        height:360px;
+    }
+
+    .eye{
+        width:85px;
+        height:52px;
+    }
+
+    .eye-core{
+        width:38px;
+        height:38px;
+    }
+
+    .apex-mouth{
+        width:125px;
+    }
+
+    .control-btn{
+        min-width:110px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+   ========================================================= */
+
+@media(max-width:560px){
+
+    .top-bar{
+        padding:
+            15px 16px;
+    }
+
+    .brand-name{
+        font-size:16px;
+        letter-spacing:4px;
+    }
+
+    .brand-status{
+        font-size:7px;
+    }
+
+    .system-status{
+        padding:
+            7px 9px;
+
+        font-size:8px;
+    }
+
+    .face-stage{
+        min-height:440px;
+
+        padding-top:25px;
+    }
+
+    .apex-face{
+        width:290px;
+        height:290px;
+    }
+
+    .face-head{
+        width:76%;
+        height:67%;
+    }
+
+    .eye{
+        top:29%;
+
+        width:67px;
+        height:42px;
+    }
+
+    .eye-left{
+        left:8%;
+    }
+
+    .eye-right{
+        right:8%;
+    }
+
+    .eye-core{
+        width:31px;
+        height:31px;
+    }
+
+    .eye-pupil{
+        width:10px;
+        height:16px;
+    }
+
+    .apex-mouth{
+        bottom:13%;
+
+        width:105px;
+    }
+
+    .mouth-line{
+        width:82px;
+    }
+
+    .mouth-bars{
+        width:75px;
+    }
+
+    #stateText{
+        font-size:11px;
+        letter-spacing:4px;
+    }
+
+    #stateSubtext{
+        font-size:7px;
+    }
+
+    .control-panel{
+        gap:7px;
+
+        padding:
+            12px 10px;
+    }
+
+    .control-btn{
+        min-width:0;
+
+        flex:1;
+
+        height:42px;
+
+        padding:
+            0 8px;
+
+        font-size:8px;
+
+        letter-spacing:1px;
+    }
+
+    .btn-icon{
+        font-size:12px;
+    }
+
+    .command-panel{
+        padding:
+            0 10px
+            12px;
+    }
+
+    #commandInput{
+        width:100%;
+
+        height:42px;
+    }
+
+    #sendBtn{
+        height:42px;
+
+        padding:
+            0 14px;
+    }
+
+    footer{
+        font-size:5px;
+
+        gap:5px;
+
+        letter-spacing:1px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media(max-width:360px){
+
+    .apex-face{
+        width:255px;
+        height:255px;
+    }
+
+    .face-stage{
+        min-height:400px;
+    }
+
+    .eye{
+        width:59px;
+        height:37px;
+    }
+
+    .eye-core{
+        width:27px;
+        height:27px;
+    }
+
+    .apex-mouth{
+        width:90px;
+    }
+
+    .mouth-line{
+        width:70px;
+    }
+
+    .control-btn{
+        font-size:7px;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media(prefers-reduced-motion:reduce){
+
+    *,
+    *::before,
+    *::after{
+        animation-duration:.001ms !important;
+        animation-iteration-count:1 !important;
+        scroll-behavior:auto !important;
+    }
+}
