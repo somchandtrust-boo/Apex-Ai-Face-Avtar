@@ -53,13 +53,13 @@ const APEX_LINKS = {
         "https://somchandtrust-boo.github.io/hd-smart-camera/",
 
     aiVoice:
-        "YOUR_AI_VOICE_ASSISTANT_LINK",
+        "https://aivoice.wecon.group/",
 
     location:
         "https://somchandtrust-boo.github.io/CBRND-Location-Tracker/admin.html",
 
     compass:
-        "YOUR_COMPASS_LINK",
+        "https://somchandtrust-boo.github.io/My-Compass/",
 
     home:
         "YOUR_CBRND_HOME_LINK",
