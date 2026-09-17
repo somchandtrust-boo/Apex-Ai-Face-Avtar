@@ -42,7 +42,7 @@ const APEX_LINKS = {
 
     /* CBRND TOOLS */
 
-    map: "YOUR_MAP_LINK",
+    map: "https://zoom.earth",
 
     siren: "YOUR_SIREN_LINK",
 
